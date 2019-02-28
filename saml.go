@@ -24,7 +24,7 @@ func (serr ErrSaml) Error() string {
 
 type SAMLServiceProvider struct {
 	IdentityProviderSSOURL string
-	IdentityProviderIssuer string
+	IdentityProviderIssuer string // this field was added erroneously earlier. don't use it. was intended to be "service provider issuer" all along
 
 	AssertionConsumerServiceURL string
 	ServiceProviderIssuer       string

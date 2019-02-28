@@ -1,10 +1,13 @@
 package types
 
 import (
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/xml"
-	"time"
-
+	"fmt"
+	"github.com/russellhaering/goxmldsig"
 	dsigtypes "github.com/russellhaering/goxmldsig/types"
+	"time"
 )
 
 type EntityDescriptor struct {
@@ -30,6 +33,7 @@ type IndexedEndpoint struct {
 
 type SPSSODescriptor struct {
 	XMLName                    xml.Name          `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
+	EntityID                   string            `xml:"entityID,attr"`
 	AuthnRequestsSigned        bool              `xml:"AuthnRequestsSigned,attr"`
 	WantAssertionsSigned       bool              `xml:"WantAssertionsSigned,attr"`
 	ProtocolSupportEnumeration string            `xml:"protocolSupportEnumeration,attr"`
@@ -41,11 +45,55 @@ type SPSSODescriptor struct {
 
 type IDPSSODescriptor struct {
 	XMLName                 xml.Name              `xml:"urn:oasis:names:tc:SAML:2.0:metadata IDPSSODescriptor"`
-	WantAuthnRequestsSigned bool                  `xml:"WantAuthnRequestsSigned,attr"`
+	WantAuthnRequestsSigned bool                  `xml:"WantAuthnRequestsSigned,attr"` // non-standard metadata attribute so we'll have to solicit this separately from the initial metadata upload
+	EntityID                string                `xml:"entityID,attr"`
 	KeyDescriptors          []KeyDescriptor       `xml:"KeyDescriptor"`
 	NameIDFormats           []NameIDFormat        `xml:"NameIDFormat"`
 	SingleSignOnServices    []SingleSignOnService `xml:"SingleSignOnService"`
 	Attributes              []Attribute           `xml:"Attribute"`
+}
+
+// GetLocationForBinding takes in a binding (an http method) and searches for the IdP SSO
+// that supports that binding. It then returns the location (url) associated with that binding.
+// If it's unable to locate the SSO with desiredBinding, it returns a non-nil error.
+func (idpSSOEl *IDPSSODescriptor) GetLocationForBinding(desiredBinding string) (string, error) {
+	for _, SSOS := range idpSSOEl.SingleSignOnServices {
+		if binding := SSOS.Binding; binding == desiredBinding {
+			return SSOS.Location, nil
+		}
+	}
+	return "", fmt.Errorf("No SSOBinding found for %v", desiredBinding)
+}
+
+// ParseCerts iterates through all the KeyDescriptors of the IdPSSODescriptor,
+// ensuring they are non-empty and can be decoded using the standard base64 decode method.
+// After the cert passes all checks, it's appended to a cert store. The certStore
+// and any error that was encountered are returned
+// Assumes the struct fields have been instantiated.
+func (idpSSOEl *IDPSSODescriptor) ParseCerts() (dsig.MemoryX509CertificateStore, error) {
+	certStore := dsig.MemoryX509CertificateStore{
+		Roots: []*x509.Certificate{},
+	}
+
+	for _, kd := range idpSSOEl.KeyDescriptors {
+		for idx, xcert := range kd.KeyInfo.X509Data.X509Certificates {
+			// it will be base64 so we'll decode
+			if xcert.Data == "" {
+				return certStore, fmt.Errorf("x509 certificate(%d) empty", idx)
+			}
+			certData, err := base64.StdEncoding.DecodeString(xcert.Data)
+			if err != nil {
+
+				return certStore, fmt.Errorf("Error decoding certificate(%d) base64 data -- may be malformed. Raw error: %v", idx, err.Error())
+			}
+			idpCert, err := x509.ParseCertificate(certData)
+			if err != nil {
+				return certStore, err
+			}
+			certStore.Roots = append(certStore.Roots, idpCert)
+		}
+	}
+	return certStore, nil
 }
 
 type KeyDescriptor struct {

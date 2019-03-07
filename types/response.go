@@ -53,17 +53,18 @@ type Signature struct {
 }
 
 type Assertion struct {
-	XMLName            xml.Name            `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
-	Version            string              `xml:"Version,attr"`
-	ID                 string              `xml:"ID,attr"`
-	IssueInstant       time.Time           `xml:"IssueInstant,attr"`
-	Issuer             *Issuer             `xml:"Issuer"`
-	Signature          *Signature          `xml:"Signature"`
-	Subject            *Subject            `xml:"Subject"`
-	Conditions         *Conditions         `xml:"Conditions"`
-	AttributeStatement *AttributeStatement `xml:"AttributeStatement"`
-	AuthnStatement     *AuthnStatement     `xml:"AuthnStatement"`
-	SignatureValidated bool                `xml:"-"` // not read, not dumped
+	XMLName                      xml.Name            `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
+	Version                      string              `xml:"Version,attr"`
+	ID                           string              `xml:"ID,attr"`
+	IssueInstant                 time.Time           `xml:"IssueInstant,attr"`
+	Issuer                       *Issuer             `xml:"Issuer"`
+	Signature                    *Signature          `xml:"Signature"`
+	Subject                      *Subject            `xml:"Subject"`
+	Conditions                   *Conditions         `xml:"Conditions"`
+	AttributeStatement           *AttributeStatement `xml:"AttributeStatement"`
+	AuthnStatement               *AuthnStatement     `xml:"AuthnStatement"`
+	SignatureValidated           bool                `xml:"-"` // not read, not dumped
+	AssertionSignaturesValidated bool                `xml:"-"`
 }
 
 type Subject struct {

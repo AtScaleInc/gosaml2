@@ -223,15 +223,19 @@ func (sp *SAMLServiceProvider) ValidateEncodedResponse(encodedResponse string) (
 		return nil, err
 	}
 
+	// response signature = signature of the entire xml document
 	var responseSignatureValidated bool
 	if !sp.SkipSignatureValidation {
 		el, err = sp.validateElementSignature(el)
 		if err == dsig.ErrMissingSignature {
+			fmt.Printf("*RESPONSE* signature validation WARNING: missing signature. Raw: %v \n", err)
 			// Unfortunately we just blew away our Response
 			el = doc.Root()
 		} else if err != nil {
+			fmt.Printf("*RESPONSE* signature validation error. Raw: %v \n", err)
 			return nil, err
 		} else if el == nil {
+			fmt.Printf("*RESPONSE* signature validation error: Missing transformed response Raw: %v \n", err)
 			return nil, fmt.Errorf("missing transformed response")
 		} else {
 			responseSignatureValidated = true
@@ -239,20 +243,27 @@ func (sp *SAMLServiceProvider) ValidateEncodedResponse(encodedResponse string) (
 	}
 
 	err = sp.decryptAssertions(el)
+
 	if err != nil {
+		fmt.Printf("*ASSERTION* error- unable to decrypt assertion. Raw: %v \n", err)
 		return nil, err
 	}
 
+	// assertion signature = signature on a subtree of the document
 	var assertionSignaturesValidated bool
 	if !sp.SkipSignatureValidation {
 		err = sp.validateAssertionSignatures(el)
+		fmt.Printf("err validating assertion sig: %v \n", err)
 		if err == dsig.ErrMissingSignature {
 			if !responseSignatureValidated {
+				// fmt.Printf("*ASSERTION* signature validation error: missing signature on both response and assertion. Raw: %v \n", err)
 				return nil, fmt.Errorf("response and/or assertions must be signed")
 			}
 		} else if err != nil {
+			// fmt.Printf("*ASSERTION* signature validation error. Raw: %v \n", err)
 			return nil, err
 		} else {
+			fmt.Printf("Setting assertionSignaturesValidated to true\n")
 			assertionSignaturesValidated = true
 		}
 	}
@@ -263,14 +274,18 @@ func (sp *SAMLServiceProvider) ValidateEncodedResponse(encodedResponse string) (
 		return nil, fmt.Errorf("unable to unmarshal response: %v", err)
 	}
 	decodedResponse.SignatureValidated = responseSignatureValidated
+
 	if assertionSignaturesValidated {
+		fmt.Printf("we have validated that the assertion was signed correctly")
 		for idx := 0; idx < len(decodedResponse.Assertions); idx++ {
+			fmt.Printf("checking that ")
 			decodedResponse.Assertions[idx].SignatureValidated = true
 		}
 	}
 
 	err = sp.Validate(decodedResponse)
 	if err != nil {
+		fmt.Printf("*ASSERTION* (not sig) validation error. Raw: %v \n", err)
 		return nil, err
 	}
 

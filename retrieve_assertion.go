@@ -38,6 +38,7 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 	}
 
 	response, err := sp.ValidateEncodedResponse(encodedResponse)
+	fmt.Printf("err coming back from validation function: %v \n", err)
 	if err != nil {
 		return nil, ErrVerification{Cause: err}
 	}
@@ -49,7 +50,9 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 
 	assertion := response.Assertions[0]
 	assertionInfo.Assertions = response.Assertions
+	fmt.Printf("although no errors came back, still checking response.SignatureValidated: %v \n", response.SignatureValidated)
 	assertionInfo.ResponseSignatureValidated = response.SignatureValidated
+	assertionInfo.AssertionSignatureValidated = assertion.SignatureValidated
 
 	warningInfo, err := sp.VerifyAssertionConditions(&assertion)
 	if err != nil {

@@ -16,8 +16,8 @@ import (
 	"testing"
 
 	"github.com/beevik/etree"
-	"github.com/russellhaering/gosaml2/types"
-	dsig "github.com/russellhaering/goxmldsig"
+	"github.com/AtScaleInc/gosaml2/types"
+	dsig "github.com/AtScaleInc/goxmldsig"
 	"github.com/stretchr/testify/require"
 )
 

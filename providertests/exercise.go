@@ -5,7 +5,7 @@ package providertests
 import (
 	"testing"
 
-	saml2 "github.com/russellhaering/gosaml2"
+	saml2 "github.com/AtScaleInc/gosaml2"
 	"github.com/stretchr/testify/require"
 )
 

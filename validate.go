@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/russellhaering/gosaml2/types"
+	"github.com/AtScaleInc/gosaml2/types"
 )
 
 //ErrParsing indicates that the value present in an assertion could not be

@@ -9,7 +9,7 @@ import (
 	"net/url"
 
 	"github.com/beevik/etree"
-	"github.com/russellhaering/gosaml2/uuid"
+	"github.com/AtScaleInc/gosaml2/uuid"
 )
 
 const issueInstantFormat = "2006-01-02T15:04:05Z"

@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"github.com/russellhaering/goxmldsig"
-	dsigtypes "github.com/russellhaering/goxmldsig/types"
+	"github.com/AtScaleInc/goxmldsig"
+	dsigtypes "github.com/AtScaleInc/goxmldsig/types"
 	"time"
 )
 

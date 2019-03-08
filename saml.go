@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/russellhaering/gosaml2/types"
-	dsig "github.com/russellhaering/goxmldsig"
-	dsigtypes "github.com/russellhaering/goxmldsig/types"
+	"github.com/AtScaleInc/gosaml2/types"
+	dsig "github.com/AtScaleInc/goxmldsig"
+	dsigtypes "github.com/AtScaleInc/goxmldsig/types"
 )
 
 type ErrSaml struct {

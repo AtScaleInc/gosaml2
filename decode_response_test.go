@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/jonboulle/clockwork"
-	"github.com/russellhaering/goxmldsig"
+	"github.com/AtScaleInc/goxmldsig"
 	"github.com/stretchr/testify/require"
 )
 

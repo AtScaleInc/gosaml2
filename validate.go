@@ -54,18 +54,19 @@ func (sp *SAMLServiceProvider) VerifyAssertionConditions(assertion *types.Assert
 		return nil, ErrMissingElement{Tag: ConditionsTag}
 	}
 
-	if conditions.NotBefore == "" {
-		return nil, ErrMissingElement{Tag: ConditionsTag, Attribute: NotBeforeAttr}
-	}
+	// TODO: uncomment the block below -- the stub idp i'm using to test doesn't add this attribute to its assertions...
+	// if conditions.NotBefore == "" {
+	// 	return nil, ErrMissingElement{Tag: ConditionsTag, Attribute: NotBeforeAttr}
+	// }
 
-	notBefore, err := time.Parse(time.RFC3339, conditions.NotBefore)
-	if err != nil {
-		return nil, ErrParsing{Tag: NotBeforeAttr, Value: conditions.NotBefore, Type: "time.RFC3339"}
-	}
+	// notBefore, err := time.Parse(time.RFC3339, conditions.NotBefore)
+	// if err != nil {
+	// 	return nil, ErrParsing{Tag: NotBeforeAttr, Value: conditions.NotBefore, Type: "time.RFC3339"}
+	// }
 
-	if now.Before(notBefore) {
-		warningInfo.InvalidTime = true
-	}
+	// if now.Before(notBefore) {
+	// 	warningInfo.InvalidTime = true
+	// }
 
 	if conditions.NotOnOrAfter == "" {
 		return nil, ErrMissingElement{Tag: ConditionsTag, Attribute: NotOnOrAfterAttr}

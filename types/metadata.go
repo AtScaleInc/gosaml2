@@ -17,6 +17,7 @@ type EntityDescriptor struct {
 	EntityID         string            `xml:"entityID,attr"`
 	SPSSODescriptor  *SPSSODescriptor  `xml:"SPSSODescriptor,omitempty"`
 	IDPSSODescriptor *IDPSSODescriptor `xml:"IDPSSODescriptor,omitempty"`
+    Extensions       *Extensions       `xml:"Extensions,omitempty"`
 }
 
 type Endpoint struct {
@@ -41,6 +42,7 @@ type SPSSODescriptor struct {
 	SingleLogoutServices       []Endpoint        `xml:"SingleLogoutService"`
 	NameIDFormats              []string          `xml:"NameIDFormat"`
 	AssertionConsumerServices  []IndexedEndpoint `xml:"AssertionConsumerService"`
+    Extensions                 *Extensions       `xml:"Extensions,omitempty"`
 }
 
 type IDPSSODescriptor struct {
@@ -50,7 +52,9 @@ type IDPSSODescriptor struct {
 	KeyDescriptors          []KeyDescriptor       `xml:"KeyDescriptor"`
 	NameIDFormats           []NameIDFormat        `xml:"NameIDFormat"`
 	SingleSignOnServices    []SingleSignOnService `xml:"SingleSignOnService"`
+    SingleLogoutServices    []SingleLogoutService `xml:"SingleLogoutService"`
 	Attributes              []Attribute           `xml:"Attribute"`
+    Extensions              *Extensions           `xml:"Extensions,omitempty"`
 }
 
 // GetLocationForBinding takes in a binding (an http method) and searches for the IdP SSO
@@ -112,4 +116,21 @@ type SingleSignOnService struct {
 	XMLName  xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata SingleSignOnService"`
 	Binding  string   `xml:"Binding,attr"`
 	Location string   `xml:"Location,attr"`
+}
+
+type SingleLogoutService struct {
+	XMLName  xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata SingleLogoutService"`
+	Binding  string   `xml:"Binding,attr"`
+	Location string   `xml:"Location,attr"`
+}
+
+type SigningMethod struct {
+    Algorithm           string       `xml:",attr"`
+    MinKeySize          string       `xml:"MinKeySize,attr,omitempty"`
+    MaxKeySize          string       `xml:"MaxKeySize,attr,omitempty"`
+}
+
+type Extensions struct {
+    DigestMethod        *DigestMethod   `xml:",omitempty"`
+    SigningMethod       *SigningMethod  `xml:",omitempty"`
 }

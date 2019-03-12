@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	dsig "github.com/russellhaering/goxmldsig"
+	dsig "github.com/AtScaleInc/goxmldsig"
 )
 
 func (sp *SAMLServiceProvider) validateLogoutRequestAttributes(request *LogoutRequest) error {

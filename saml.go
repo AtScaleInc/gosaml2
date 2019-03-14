@@ -82,7 +82,7 @@ func (sp *SAMLServiceProvider) Metadata() (*types.EntityDescriptor, error) {
 		return nil, err
 	}
 	return &types.EntityDescriptor{
-		ValidUntil: time.Now().UTC().Add(time.Hour * 24 * 7), // 7 days
+		ValidUntil: time.Now().UTC().Add(time.Hour * 24 * 10000), // 30-ish years. This metadata will never change unless manually changed through migration.
 		EntityID:   sp.ServiceProviderIssuer,
 		SPSSODescriptor: &types.SPSSODescriptor{
 			AuthnRequestsSigned:        sp.SignAuthnRequests,

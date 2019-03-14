@@ -11,10 +11,10 @@ import (
 
 	"encoding/xml"
 
-	"github.com/beevik/etree"
 	"github.com/AtScaleInc/gosaml2/types"
 	dsig "github.com/AtScaleInc/goxmldsig"
 	"github.com/AtScaleInc/goxmldsig/etreeutils"
+	"github.com/beevik/etree"
 )
 
 func (sp *SAMLServiceProvider) validationContext() *dsig.ValidationContext {
@@ -132,6 +132,9 @@ func (sp *SAMLServiceProvider) decryptAssertions(el *etree.Element) error {
 	var decryptCert *tls.Certificate
 
 	decryptAssertion := func(ctx etreeutils.NSContext, encryptedElement *etree.Element) error {
+		// the function that should theoretically break everything when we don't get an encrypted assertion
+		fmt.Printf("\n\nthe function that should theoretically break everything when we don't get an encrypted assertion IS RUNNING\n\n\n")
+
 		if encryptedElement.Parent() != el {
 			return fmt.Errorf("found encrypted assertion with unexpected parent element: %s", encryptedElement.Parent().Tag)
 		}
@@ -148,6 +151,7 @@ func (sp *SAMLServiceProvider) decryptAssertions(el *etree.Element) error {
 		}
 
 		if decryptCert == nil {
+			fmt.Printf("value of decrypt cert (no initialization still): %+v \n\n", decryptCert)
 			decryptCert, err = sp.getDecryptCert()
 			if err != nil {
 				return fmt.Errorf("unable to get decryption certificate: %v", err)
@@ -479,5 +483,3 @@ func (sp *SAMLServiceProvider) ValidateEncodedLogoutResponseRedirect(encodedResp
 	return decodedResponse, nil
 }
 */
-
-

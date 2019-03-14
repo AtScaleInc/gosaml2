@@ -30,6 +30,7 @@ type SAMLServiceProvider struct {
 	IdentityProviderIssuer     string
 
 	AssertionConsumerServiceURL string
+	SingleLogoutServices        []types.Endpoint
 	ServiceProviderSLOURL       string
 	ServiceProviderIssuer       string
 
@@ -119,6 +120,7 @@ func (sp *SAMLServiceProvider) Metadata() (*types.EntityDescriptor, error) {
 				Location: sp.AssertionConsumerServiceURL,
 				Index:    1,
 			}},
+			SingleLogoutServices: sp.SingleLogoutServices,
 		},
 	}, nil
 }

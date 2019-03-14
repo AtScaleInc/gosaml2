@@ -10,6 +10,19 @@ import (
 	"time"
 )
 
+// Redeclaring consts here (they're present in xml_constants.go) because they're declared in a
+// separate package within the same repo, which would lead to a circular import if I attempted
+// to import them here.
+const (
+	BindingHttpPost     = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+	BindingHttpRedirect = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+)
+
+var frontChannelBindingsSet = map[string]bool{
+	BindingHttpPost:     true,
+	BindingHttpRedirect: true,
+}
+
 type EntityDescriptor struct {
 	XMLName    xml.Name  `xml:"urn:oasis:names:tc:SAML:2.0:metadata EntityDescriptor"`
 	ValidUntil time.Time `xml:"validUntil,attr"`
@@ -57,16 +70,38 @@ type IDPSSODescriptor struct {
 	Extensions              *Extensions           `xml:"Extensions,omitempty"`
 }
 
-// GetLocationForBinding takes in a binding (an http method) and searches for the IdP SSO
+// GetSignOnLocationForBinding takes in a binding (an http method) and searches for the IdP SSO
 // that supports that binding. It then returns the location (url) associated with that binding.
 // If it's unable to locate the SSO with desiredBinding, it returns a non-nil error.
-func (idpSSOEl *IDPSSODescriptor) GetLocationForBinding(desiredBinding string) (string, error) {
+func (idpSSOEl *IDPSSODescriptor) GetSignOnLocationForBinding(desiredBinding string) (string, error) {
 	for _, SSOS := range idpSSOEl.SingleSignOnServices {
 		if binding := SSOS.Binding; binding == desiredBinding {
 			return SSOS.Location, nil
 		}
 	}
-	return "", fmt.Errorf("No SSOBinding found for %v", desiredBinding)
+	return "", fmt.Errorf("No SSO service found for binding: %v", desiredBinding)
+}
+
+// FrontChannelBindingExists will return a bool corresponding to whether or not the IDP
+// has an SLO service with either the POST or Redirect binding
+func (idpSSOEl *IDPSSODescriptor) FrontChannelBindingExists() bool {
+	for _, SLOS := range idpSSOEl.SingleLogoutServices {
+		if frontChannelBindingsSet[SLOS.Binding] {
+			return true
+		}
+	}
+	return false
+}
+
+// GetSLOService returns the first slo service found for the idp that has a front channel binding.
+// If not found, it returns a non nil error.
+func (idpSSOEl *IDPSSODescriptor) GetFrontChannelSLOS() (*SingleLogoutService, error) {
+	for _, SLOS := range idpSSOEl.SingleLogoutServices {
+		if frontChannelBindingsSet[SLOS.Binding] {
+			return &SLOS, nil
+		}
+	}
+	return nil, fmt.Errorf("Unable to find SLOS with front channel binding")
 }
 
 // ParseCerts iterates through all the KeyDescriptors of the IdPSSODescriptor,

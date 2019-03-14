@@ -47,7 +47,6 @@ type IndexedEndpoint struct {
 
 type SPSSODescriptor struct {
 	XMLName                    xml.Name          `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
-	EntityID                   string            `xml:"entityID,attr"`
 	AuthnRequestsSigned        bool              `xml:"AuthnRequestsSigned,attr"`
 	WantAssertionsSigned       bool              `xml:"WantAssertionsSigned,attr"`
 	ProtocolSupportEnumeration string            `xml:"protocolSupportEnumeration,attr"`

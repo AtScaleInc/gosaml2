@@ -129,6 +129,7 @@ func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
 }
 
 func (sp *SAMLServiceProvider) decryptAssertions(el *etree.Element) error {
+
 	var decryptCert *tls.Certificate
 
 	decryptAssertion := func(ctx etreeutils.NSContext, encryptedElement *etree.Element) error {

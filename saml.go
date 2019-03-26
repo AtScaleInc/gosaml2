@@ -171,6 +171,7 @@ func (sp *SAMLServiceProvider) MetadataWithSLO(validityHours int64) (*types.Enti
 						{Algorithm: types.MethodAES128GCM, DigestMethod: nil},
 						{Algorithm: types.MethodAES128CBC, DigestMethod: nil},
 						{Algorithm: types.MethodAES256CBC, DigestMethod: nil},
+						{Algorithm: types.MethodTripleDESCBC, DigestMethod: nil},
 					},
 				},
 			},

@@ -85,23 +85,26 @@ func xmlUnmarshalElement(el *etree.Element, obj interface{}) error {
 }
 
 func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
+	fmt.Printf("\n\n WE ARE GETTING THE DECRYPTION CERT\n\n")
 	if sp.SPKeyStore == nil {
 		return nil, fmt.Errorf("no decryption certs available")
 	}
 
 	//This is the tls.Certificate we'll use to decrypt any encrypted assertions
 	var decryptCert tls.Certificate
-
 	switch crt := sp.SPKeyStore.(type) {
 	case dsig.TLSCertKeyStore:
 		// Get the tls.Certificate directly if possible
 		decryptCert = tls.Certificate(crt)
+		fmt.Printf("the cert type is a dsig.TLSCertKeyStore")
 
 	default:
 
 		//Otherwise, construct one from the results of GetKeyPair
 		pk, cert, err := sp.SPKeyStore.GetKeyPair()
+		fmt.Printf("the cert type is not a dsig.TLSCertKeyStore")
 		if err != nil {
+			fmt.Printf("failed to get key pair from the keystore: %v", err)
 			return nil, fmt.Errorf("error getting keypair: %v", err)
 		}
 
@@ -124,7 +127,7 @@ func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
 			}
 		}
 	}
-
+	fmt.Printf("WE GOT THE DECRYPTION CERT\n")
 	return &decryptCert, nil
 }
 
@@ -155,12 +158,16 @@ func (sp *SAMLServiceProvider) decryptAssertions(el *etree.Element) error {
 			fmt.Printf("value of decrypt cert (no initialization still): %+v \n\n", decryptCert)
 			decryptCert, err = sp.getDecryptCert()
 			if err != nil {
+				fmt.Printf("FAILED to get decrypt cert\n\n")
 				return fmt.Errorf("unable to get decryption certificate: %v", err)
 			}
 		}
+		fmt.Printf("the value of the decrypt cert is no longer nil\n\n")
 
 		raw, derr := encryptedAssertion.DecryptBytes(decryptCert)
 		if derr != nil {
+			fmt.Printf("failed to decrypt the bytes of the encrypted assertion\n\n")
+
 			return fmt.Errorf("unable to decrypt encrypted assertion: %v", derr)
 		}
 

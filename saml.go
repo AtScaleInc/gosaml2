@@ -112,7 +112,6 @@ func (sp *SAMLServiceProvider) Metadata() (*types.EntityDescriptor, error) {
 						{Algorithm: types.MethodAES128GCM, DigestMethod: nil},
 						{Algorithm: types.MethodAES128CBC, DigestMethod: nil},
 						{Algorithm: types.MethodAES256CBC, DigestMethod: nil},
-						{Algorithm: types.MethodTripleDESCBC, DigestMethod: nil},
 					},
 				},
 			},

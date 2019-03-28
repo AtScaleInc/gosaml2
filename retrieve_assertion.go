@@ -38,19 +38,18 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 	}
 
 	response, err := sp.ValidateEncodedResponse(encodedResponse)
-	fmt.Printf("err coming back from validation function: %v \n", err)
+	fmt.Printf("Err coming back from validation function: %v\n", err)
 	if err != nil {
 		return nil, ErrVerification{Cause: err}
 	}
 
-	// TODO: Support multiple assertions
+	// TODO: Support multiple assertions (maybe -- not that common)
 	if len(response.Assertions) == 0 {
 		return nil, ErrMissingAssertion
 	}
 
 	assertion := response.Assertions[0]
 	assertionInfo.Assertions = response.Assertions
-	fmt.Printf("although no errors came back, still checking response.SignatureValidated: %v \n", response.SignatureValidated)
 	assertionInfo.ResponseSignatureValidated = response.SignatureValidated
 	assertionInfo.AssertionSignatureValidated = assertion.SignatureValidated
 
@@ -92,7 +91,7 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 			assertionInfo.SessionNotOnOrAfter = assertion.AuthnStatement.SessionNotOnOrAfter
 		}
 
-        assertionInfo.SessionIndex = assertion.AuthnStatement.SessionIndex
+		assertionInfo.SessionIndex = assertion.AuthnStatement.SessionIndex
 	}
 
 	assertionInfo.WarningInfo = warningInfo

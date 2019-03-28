@@ -127,7 +127,7 @@ func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
 			}
 		}
 	}
-	fmt.Printf("WE GOT THE DECRYPTION CERT\n")
+	fmt.Printf("\nWE GOT THE DECRYPTION CERT\n")
 	return &decryptCert, nil
 }
 
@@ -136,8 +136,6 @@ func (sp *SAMLServiceProvider) decryptAssertions(el *etree.Element) error {
 	var decryptCert *tls.Certificate
 
 	decryptAssertion := func(ctx etreeutils.NSContext, encryptedElement *etree.Element) error {
-		// the function that should theoretically break everything when we don't get an encrypted assertion
-		fmt.Printf("\n\nthe function that should theoretically break everything when we don't get an encrypted assertion IS RUNNING\n\n\n")
 
 		if encryptedElement.Parent() != el {
 			return fmt.Errorf("found encrypted assertion with unexpected parent element: %s", encryptedElement.Parent().Tag)
@@ -166,8 +164,6 @@ func (sp *SAMLServiceProvider) decryptAssertions(el *etree.Element) error {
 
 		raw, derr := encryptedAssertion.DecryptBytes(decryptCert)
 		if derr != nil {
-			fmt.Printf("failed to decrypt the bytes of the encrypted assertion\n\n")
-
 			return fmt.Errorf("unable to decrypt encrypted assertion: %v", derr)
 		}
 
@@ -417,6 +413,7 @@ func (sp *SAMLServiceProvider) ValidateEncodedLogoutResponsePOST(encodedResponse
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("successfully parsed the logout response\n\n")
 
 	var responseSignatureValidated bool
 	if !sp.SkipSignatureValidation {

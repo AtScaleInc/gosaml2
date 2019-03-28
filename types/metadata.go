@@ -156,9 +156,10 @@ type SingleSignOnService struct {
 }
 
 type SingleLogoutService struct {
-	XMLName  xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata SingleLogoutService"`
-	Binding  string   `xml:"Binding,attr"`
-	Location string   `xml:"Location,attr"`
+	XMLName          xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata SingleLogoutService"`
+	Binding          string   `xml:"Binding,attr"`
+	Location         string   `xml:"Location,attr"`
+	ResponseLocation string   `xml:"ResponseLocation,attr"` // where to send logout response in IdP init logout
 }
 
 type SigningMethod struct {

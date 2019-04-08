@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/russellhaering/gosaml2/types"
-	dsig "github.com/russellhaering/goxmldsig"
-	dsigtypes "github.com/russellhaering/goxmldsig/types"
+	"github.com/AtScaleInc/gosaml2/types"
+	dsig "github.com/AtScaleInc/goxmldsig"
+	dsigtypes "github.com/AtScaleInc/goxmldsig/types"
 )
 
 type ErrSaml struct {
@@ -23,10 +23,15 @@ func (serr ErrSaml) Error() string {
 }
 
 type SAMLServiceProvider struct {
-	IdentityProviderSSOURL string
-	IdentityProviderIssuer string
+	IdentityProviderSSOURL     string
+	IdentityProviderSSOBinding string
+	IdentityProviderSLOURL     string
+	IdentityProviderSLOBinding string
+	IdentityProviderIssuer     string
 
 	AssertionConsumerServiceURL string
+	SingleLogoutServices        []types.Endpoint
+	ServiceProviderSLOURL       string
 	ServiceProviderIssuer       string
 
 	SignAuthnRequests              bool
@@ -77,7 +82,7 @@ func (sp *SAMLServiceProvider) Metadata() (*types.EntityDescriptor, error) {
 		return nil, err
 	}
 	return &types.EntityDescriptor{
-		ValidUntil: time.Now().UTC().Add(time.Hour * 24 * 7), // 7 days
+		ValidUntil: time.Now().UTC().Add(time.Hour * 24 * 10000), // 30-ish years. This metadata will never change unless manually changed through migration.
 		EntityID:   sp.ServiceProviderIssuer,
 		SPSSODescriptor: &types.SPSSODescriptor{
 			AuthnRequestsSigned:        sp.SignAuthnRequests,
@@ -104,9 +109,9 @@ func (sp *SAMLServiceProvider) Metadata() (*types.EntityDescriptor, error) {
 						},
 					},
 					EncryptionMethods: []types.EncryptionMethod{
-						{Algorithm: types.MethodAES128GCM},
-						{Algorithm: types.MethodAES128CBC},
-						{Algorithm: types.MethodAES256CBC},
+						{Algorithm: types.MethodAES128GCM, DigestMethod: nil},
+						{Algorithm: types.MethodAES128CBC, DigestMethod: nil},
+						{Algorithm: types.MethodAES256CBC, DigestMethod: nil},
 					},
 				},
 			},
@@ -114,6 +119,70 @@ func (sp *SAMLServiceProvider) Metadata() (*types.EntityDescriptor, error) {
 				Binding:  BindingHttpPost,
 				Location: sp.AssertionConsumerServiceURL,
 				Index:    1,
+			}},
+			SingleLogoutServices: sp.SingleLogoutServices,
+		},
+	}, nil
+}
+
+func (sp *SAMLServiceProvider) MetadataWithSLO(validityHours int64) (*types.EntityDescriptor, error) {
+	signingCertBytes, err := sp.GetSigningCertBytes()
+	if err != nil {
+		return nil, err
+	}
+	encryptionCertBytes, err := sp.GetEncryptionCertBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	if validityHours <= 0 {
+		//By default let's keep it to 7 days.
+		validityHours = int64(time.Hour * 24 * 7)
+	}
+
+	return &types.EntityDescriptor{
+		ValidUntil: time.Now().UTC().Add(time.Duration(validityHours)), // default 7 days
+		EntityID:   sp.ServiceProviderIssuer,
+		SPSSODescriptor: &types.SPSSODescriptor{
+			AuthnRequestsSigned:        sp.SignAuthnRequests,
+			WantAssertionsSigned:       !sp.SkipSignatureValidation,
+			ProtocolSupportEnumeration: SAMLProtocolNamespace,
+			KeyDescriptors: []types.KeyDescriptor{
+				{
+					Use: "signing",
+					KeyInfo: dsigtypes.KeyInfo{
+						X509Data: dsigtypes.X509Data{
+							X509Certificates: []dsigtypes.X509Certificate{dsigtypes.X509Certificate{
+								Data: base64.StdEncoding.EncodeToString(signingCertBytes),
+							}},
+						},
+					},
+				},
+				{
+					Use: "encryption",
+					KeyInfo: dsigtypes.KeyInfo{
+						X509Data: dsigtypes.X509Data{
+							X509Certificates: []dsigtypes.X509Certificate{dsigtypes.X509Certificate{
+								Data: base64.StdEncoding.EncodeToString(encryptionCertBytes),
+							}},
+						},
+					},
+					EncryptionMethods: []types.EncryptionMethod{
+						{Algorithm: types.MethodAES128GCM, DigestMethod: nil},
+						{Algorithm: types.MethodAES128CBC, DigestMethod: nil},
+						{Algorithm: types.MethodAES256CBC, DigestMethod: nil},
+						{Algorithm: types.MethodTripleDESCBC, DigestMethod: nil},
+					},
+				},
+			},
+			AssertionConsumerServices: []types.IndexedEndpoint{{
+				Binding:  BindingHttpPost,
+				Location: sp.AssertionConsumerServiceURL,
+				Index:    1,
+			}},
+			SingleLogoutServices: []types.Endpoint{{
+				Binding:  BindingHttpPost,
+				Location: sp.ServiceProviderSLOURL,
 			}},
 		},
 	}, nil
@@ -184,11 +253,13 @@ type WarningInfo struct {
 }
 
 type AssertionInfo struct {
-	NameID                     string
-	Values                     Values
-	WarningInfo                *WarningInfo
-	AuthnInstant               *time.Time
-	SessionNotOnOrAfter        *time.Time
-	Assertions                 []types.Assertion
-	ResponseSignatureValidated bool
+	NameID                      string
+	Values                      Values
+	WarningInfo                 *WarningInfo
+	SessionIndex                string
+	AuthnInstant                *time.Time
+	SessionNotOnOrAfter         *time.Time
+	Assertions                  []types.Assertion
+	ResponseSignatureValidated  bool
+	AssertionSignatureValidated bool
 }

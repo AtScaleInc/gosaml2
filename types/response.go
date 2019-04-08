@@ -33,6 +33,18 @@ type Response struct {
 	SignatureValidated  bool                 `xml:"-"` // not read, not dumped
 }
 
+type LogoutResponse struct {
+	XMLName             xml.Name             `xml:"urn:oasis:names:tc:SAML:2.0:protocol LogoutResponse"`
+	ID                  string               `xml:"ID,attr"`
+	InResponseTo        string               `xml:"InResponseTo,attr"`
+	Destination         string               `xml:"Destination,attr"`
+	Version             string               `xml:"Version,attr"`
+	IssueInstant        time.Time            `xml:"IssueInstant,attr"`
+	Status              *Status              `xml:"Status"`
+	Issuer              *Issuer              `xml:"Issuer"`
+	SignatureValidated  bool                 `xml:"-"` // not read, not dumped
+}
+
 type Status struct {
 	XMLName    xml.Name    `xml:"urn:oasis:names:tc:SAML:2.0:protocol Status"`
 	StatusCode *StatusCode `xml:"StatusCode"`
@@ -53,17 +65,18 @@ type Signature struct {
 }
 
 type Assertion struct {
-	XMLName            xml.Name            `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
-	Version            string              `xml:"Version,attr"`
-	ID                 string              `xml:"ID,attr"`
-	IssueInstant       time.Time           `xml:"IssueInstant,attr"`
-	Issuer             *Issuer             `xml:"Issuer"`
-	Signature          *Signature          `xml:"Signature"`
-	Subject            *Subject            `xml:"Subject"`
-	Conditions         *Conditions         `xml:"Conditions"`
-	AttributeStatement *AttributeStatement `xml:"AttributeStatement"`
-	AuthnStatement     *AuthnStatement     `xml:"AuthnStatement"`
-	SignatureValidated bool                `xml:"-"` // not read, not dumped
+	XMLName                      xml.Name            `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
+	Version                      string              `xml:"Version,attr"`
+	ID                           string              `xml:"ID,attr"`
+	IssueInstant                 time.Time           `xml:"IssueInstant,attr"`
+	Issuer                       *Issuer             `xml:"Issuer"`
+	Signature                    *Signature          `xml:"Signature"`
+	Subject                      *Subject            `xml:"Subject"`
+	Conditions                   *Conditions         `xml:"Conditions"`
+	AttributeStatement           *AttributeStatement `xml:"AttributeStatement"`
+	AuthnStatement               *AuthnStatement     `xml:"AuthnStatement"`
+	SignatureValidated           bool                `xml:"-"` // not read, not dumped
+	AssertionSignaturesValidated bool                `xml:"-"`
 }
 
 type Subject struct {
@@ -150,6 +163,11 @@ type AttributeValue struct {
 
 type AuthnStatement struct {
 	XMLName             xml.Name      `xml:"urn:oasis:names:tc:SAML:2.0:assertion AuthnStatement"`
+    //Section 4.1.4.2 - https://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf
+    //If the identity provider supports the Single Logout profile, defined in Section 4.4
+    //, any such authentication statements MUST include a SessionIndex attribute to enable 
+    //per-session logout requests by the service provider.
+    SessionIndex        string        `xml:"SessionIndex,attr,omitempty"`
 	AuthnInstant        *time.Time    `xml:"AuthnInstant,attr,omitempty"`
 	SessionNotOnOrAfter *time.Time    `xml:"SessionNotOnOrAfter,attr,omitempty"`
 	AuthnContext        *AuthnContext `xml:"AuthnContext"`

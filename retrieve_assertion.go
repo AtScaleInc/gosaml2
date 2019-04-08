@@ -42,7 +42,7 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 		return nil, ErrVerification{Cause: err}
 	}
 
-	// TODO: Support multiple assertions
+	// TODO: Support multiple assertions (maybe -- not that common)
 	if len(response.Assertions) == 0 {
 		return nil, ErrMissingAssertion
 	}
@@ -50,6 +50,7 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 	assertion := response.Assertions[0]
 	assertionInfo.Assertions = response.Assertions
 	assertionInfo.ResponseSignatureValidated = response.SignatureValidated
+	assertionInfo.AssertionSignatureValidated = assertion.SignatureValidated
 
 	warningInfo, err := sp.VerifyAssertionConditions(&assertion)
 	if err != nil {
@@ -88,6 +89,8 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 		if assertion.AuthnStatement.SessionNotOnOrAfter != nil {
 			assertionInfo.SessionNotOnOrAfter = assertion.AuthnStatement.SessionNotOnOrAfter
 		}
+
+		assertionInfo.SessionIndex = assertion.AuthnStatement.SessionIndex
 	}
 
 	assertionInfo.WarningInfo = warningInfo

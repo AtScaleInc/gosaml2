@@ -38,7 +38,6 @@ func (sp *SAMLServiceProvider) RetrieveAssertionInfo(encodedResponse string) (*A
 	}
 
 	response, err := sp.ValidateEncodedResponse(encodedResponse)
-	fmt.Printf("Err coming back from validation function: %v\n", err)
 	if err != nil {
 		return nil, ErrVerification{Cause: err}
 	}

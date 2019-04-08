@@ -117,18 +117,14 @@ func (idpSSOEl *IDPSSODescriptor) ParseCerts() (dsig.MemoryX509CertificateStore,
 		for idx, xcert := range kd.KeyInfo.X509Data.X509Certificates {
 			// it will be base64 so we'll decode
 			if xcert.Data == "" {
-				fmt.Printf("x509 certificate(%d) empty", idx)
 				return certStore, fmt.Errorf("x509 certificate(%d) empty", idx)
 			}
 			certData, err := base64.StdEncoding.DecodeString(xcert.Data)
 			if err != nil {
-				fmt.Printf("Error decoding certificate(%d) base64 data -- may be malformed. Raw error: %v", idx, err.Error())
-
 				return certStore, fmt.Errorf("Error decoding certificate(%d) base64 data -- may be malformed. Raw error: %v", idx, err.Error())
 			}
 			idpCert, err := x509.ParseCertificate(certData)
 			if err != nil {
-				fmt.Printf("failed to parse certificate because: %v", err)
 				return certStore, err
 			}
 			certStore.Roots = append(certStore.Roots, idpCert)

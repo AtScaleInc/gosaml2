@@ -85,7 +85,6 @@ func xmlUnmarshalElement(el *etree.Element, obj interface{}) error {
 }
 
 func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
-	fmt.Printf("\n\n WE ARE GETTING THE DECRYPTION CERT\n\n")
 	if sp.SPKeyStore == nil {
 		return nil, fmt.Errorf("no decryption certs available")
 	}
@@ -96,15 +95,12 @@ func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
 	case dsig.TLSCertKeyStore:
 		// Get the tls.Certificate directly if possible
 		decryptCert = tls.Certificate(crt)
-		fmt.Printf("the cert type is a dsig.TLSCertKeyStore")
 
 	default:
 
 		//Otherwise, construct one from the results of GetKeyPair
 		pk, cert, err := sp.SPKeyStore.GetKeyPair()
-		fmt.Printf("the cert type is not a dsig.TLSCertKeyStore")
 		if err != nil {
-			fmt.Printf("failed to get key pair from the keystore: %v", err)
 			return nil, fmt.Errorf("error getting keypair: %v", err)
 		}
 
@@ -127,7 +123,6 @@ func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
 			}
 		}
 	}
-	fmt.Printf("\nWE GOT THE DECRYPTION CERT\n")
 	return &decryptCert, nil
 }
 
@@ -153,14 +148,11 @@ func (sp *SAMLServiceProvider) decryptAssertions(el *etree.Element) error {
 		}
 
 		if decryptCert == nil {
-			fmt.Printf("value of decrypt cert (no initialization still): %+v \n\n", decryptCert)
 			decryptCert, err = sp.getDecryptCert()
 			if err != nil {
-				fmt.Printf("FAILED to get decrypt cert\n\n")
 				return fmt.Errorf("unable to get decryption certificate: %v", err)
 			}
 		}
-		fmt.Printf("the value of the decrypt cert is no longer nil\n\n")
 
 		raw, derr := encryptedAssertion.DecryptBytes(decryptCert)
 		if derr != nil {
@@ -259,14 +251,11 @@ func (sp *SAMLServiceProvider) ValidateEncodedResponse(encodedResponse string) (
 	if !sp.SkipSignatureValidation {
 		el, err = sp.validateElementSignature(el)
 		if err == dsig.ErrMissingSignature {
-			fmt.Printf("*RESPONSE* signature validation WARNING: missing signature. Raw: %v \n", err)
 			// Unfortunately we just blew away our Response
 			el = doc.Root()
 		} else if err != nil {
-			fmt.Printf("*RESPONSE* signature validation error. Raw: %v \n", err)
 			return nil, err
 		} else if el == nil {
-			fmt.Printf("*RESPONSE* signature validation error: Missing transformed response Raw: %v \n", err)
 			return nil, fmt.Errorf("missing transformed response")
 		} else {
 			responseSignatureValidated = true
@@ -276,7 +265,6 @@ func (sp *SAMLServiceProvider) ValidateEncodedResponse(encodedResponse string) (
 	err = sp.decryptAssertions(el)
 
 	if err != nil {
-		fmt.Printf("*ASSERTION* error- unable to decrypt assertion. Raw: %v \n", err)
 		return nil, err
 	}
 
@@ -284,17 +272,13 @@ func (sp *SAMLServiceProvider) ValidateEncodedResponse(encodedResponse string) (
 	var assertionSignaturesValidated bool
 	if !sp.SkipSignatureValidation {
 		err = sp.validateAssertionSignatures(el)
-		fmt.Printf("err validating assertion sig: %v \n", err)
 		if err == dsig.ErrMissingSignature {
 			if !responseSignatureValidated {
-				// fmt.Printf("*ASSERTION* signature validation error: missing signature on both response and assertion. Raw: %v \n", err)
 				return nil, fmt.Errorf("response and/or assertions must be signed")
 			}
 		} else if err != nil {
-			// fmt.Printf("*ASSERTION* signature validation error. Raw: %v \n", err)
 			return nil, err
 		} else {
-			fmt.Printf("Setting assertionSignaturesValidated to true\n")
 			assertionSignaturesValidated = true
 		}
 	}
@@ -307,16 +291,13 @@ func (sp *SAMLServiceProvider) ValidateEncodedResponse(encodedResponse string) (
 	decodedResponse.SignatureValidated = responseSignatureValidated
 
 	if assertionSignaturesValidated {
-		fmt.Printf("we have validated that the assertion was signed correctly")
 		for idx := 0; idx < len(decodedResponse.Assertions); idx++ {
-			fmt.Printf("checking that ")
 			decodedResponse.Assertions[idx].SignatureValidated = true
 		}
 	}
 
 	err = sp.Validate(decodedResponse)
 	if err != nil {
-		fmt.Printf("*ASSERTION* (not sig) validation error. Raw: %v \n", err)
 		return nil, err
 	}
 
@@ -413,7 +394,6 @@ func (sp *SAMLServiceProvider) ValidateEncodedLogoutResponsePOST(encodedResponse
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("successfully parsed the logout response\n\n")
 
 	var responseSignatureValidated bool
 	if !sp.SkipSignatureValidation {

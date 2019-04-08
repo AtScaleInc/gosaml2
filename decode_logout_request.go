@@ -39,22 +39,18 @@ func (sp *SAMLServiceProvider) ValidateEncodedLogoutRequestPOST(encodedRequest s
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("successfully parsed the logout REQUEST")
 
 	var requestSignatureValidated bool
-	fmt.Println("moving onto validating signatures on the request")
 	if !sp.SkipSignatureValidation {
 		el, err = sp.validateElementSignature(el)
 		if err == dsig.ErrMissingSignature {
 			// Unfortunately we just blew away our Response
 			el = doc.Root()
 		} else if err != nil {
-			fmt.Printf("error validating logout request sig: %v\n", err)
 			return nil, err
 		} else if el == nil {
 			return nil, fmt.Errorf("missing transformed logout request")
 		} else {
-			fmt.Printf("i guess we validated it!")
 			requestSignatureValidated = true
 		}
 	}
@@ -64,7 +60,6 @@ func (sp *SAMLServiceProvider) ValidateEncodedLogoutRequestPOST(encodedRequest s
 	if err != nil {
 		return nil, fmt.Errorf("unable to unmarshal logout request: %v", err)
 	}
-	fmt.Printf("we have unmarshalled the xml into a logout request struct")
 	decodedRequest.SignatureValidated = requestSignatureValidated
 
 	err = sp.ValidateDecodedLogoutRequest(decodedRequest)

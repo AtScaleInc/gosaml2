@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/AtScaleInc/goxmldsig"
 	dsigtypes "github.com/AtScaleInc/goxmldsig/types"
+	"strings"
 	"time"
 )
 
@@ -119,7 +120,7 @@ func (idpSSOEl *IDPSSODescriptor) ParseCerts() (dsig.MemoryX509CertificateStore,
 			if xcert.Data == "" {
 				return certStore, fmt.Errorf("x509 certificate(%d) empty", idx)
 			}
-			certData, err := base64.StdEncoding.DecodeString(xcert.Data)
+			certData, err := base64.StdEncoding.DecodeString(strings.TrimSpace(xcert.Data))
 			if err != nil {
 				return certStore, fmt.Errorf("Error decoding certificate(%d) base64 data -- may be malformed. Raw error: %v", idx, err.Error())
 			}
